@@ -19,7 +19,7 @@ module.exports.hello = async (event) => {
   // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
 };
 
-const scan = async () => {
+const scanProducts = async () => {
   const scanResult = await dynamo
     .scan({
       TableName: process.env.TABLE_NAME_ONE,
@@ -28,17 +28,37 @@ const scan = async () => {
   return scanResult.Items;
 };
 
+const scanStocks = async () => {
+  const result = await dynamo
+    .scan({
+      TableName: process.env.TABLE_NAME_TWO,
+    })
+    .promise();
+  return result.Items;
+};
+
 module.exports.getProductsList = async (event) => {
-  const scanResult = await scan();
+  const productsResult = await scanProducts();
+  const stockResults = await scanStocks();
+  const productsWithCount = productsResult.map((product) => {
+    const stockCount = stockResults.find((stockItem) => {
+      return stockItem.product_id == product.id;
+    });
+    return {
+      ...product,
+      count: stockCount.count ? stockCount.count : 0,
+    };
+  });
+
   return {
     statusCode: 200,
-    body: JSON.stringify(scanResult),
+    body: JSON.stringify(productsWithCount),
   };
 };
 
 module.exports.getProductsById = async (event) => {
   const pId = event.pathParameters.productId;
-  const scanResult = await scan();
+  const scanResult = await scanProducts();
   const product = scanResult.find((item) => {
     return item.id == pId;
   });
