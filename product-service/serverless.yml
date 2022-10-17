@@ -60,8 +60,10 @@ package:
 functions:
   getProductsList:
     handler: handler.getProductsList
-  getProductsById: 
+  getProductsById:
     handler: handler.getProductsById
+  createProduct:
+    handler: handler.createProduct
   hello:
     handler: handler.hello
 #    The following are a few example events you can configure

@@ -41,12 +41,15 @@ module.exports.getProductsList = async (event) => {
   const productsResult = await scanProducts();
   const stockResults = await scanStocks();
   const productsWithCount = productsResult.map((product) => {
-    const stockCount = stockResults.find((stockItem) => {
+    let stockCount = stockResults.find((stockItem) => {
       return stockItem.product_id == product.id;
     });
+    if (!stockCount) {
+      stockCount = { count: 0 };
+    }
     return {
       ...product,
-      count: stockCount.count ? stockCount.count : 0,
+      count: stockCount.count,
     };
   });
 
@@ -56,13 +59,37 @@ module.exports.getProductsList = async (event) => {
   };
 };
 
+const putProduct = async (item) => {
+  const putResults = await dynamo
+    .put({
+      TableName: process.env.TABLE_NAME_ONE,
+      Item: item,
+    })
+    .promise();
+  return putResults;
+};
+
+module.exports.createProduct = async (event) => {
+  const itemToInsert = JSON.parse(event.body);
+  const putProductResults = await putProduct(itemToInsert);
+  return putProductResults;
+};
+
+const queryProducts = async (id) => {
+  const queryResult = await dynamo
+    .query({
+      TableName: process.env.TABLE_NAME_ONE,
+      KeyConditionExpression: "id = :id",
+      ExpressionAttributeValues: { ":id": id },
+    })
+    .promise();
+  return queryResult;
+};
+
 module.exports.getProductsById = async (event) => {
   const pId = event.pathParameters.productId;
-  const scanResult = await scanProducts();
-  const product = scanResult.find((item) => {
-    return item.id == pId;
-  });
-  if (!product) {
+  const product = await queryProducts(pId);
+  if (product.Count == 0) {
     return {
       statusCode: 404,
       body: JSON.stringify(`Product with ${pId} does not exist`),
@@ -70,6 +97,6 @@ module.exports.getProductsById = async (event) => {
   }
   return {
     statusCode: 200,
-    body: JSON.stringify(product),
+    body: JSON.stringify(product.Items),
   };
 };
