@@ -72,10 +72,29 @@ const putProduct = async (item) => {
 };
 
 module.exports.createProduct = async (event) => {
-  console.log("createProduct Lambda function...", event);
-  const itemToInsert = JSON.parse(event.body);
-  const putProductResults = await putProduct(itemToInsert);
-  return putProductResults;
+  console.log("createProduct Lambda function...", event.body);
+  let itemToInsert = {};
+  try {
+    itemToInsert = JSON.parse(event.body);
+  } catch (error) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify("Bad Payload"),
+    };
+  }
+  let res;
+  try {
+    res = await putProduct(itemToInsert);
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify(res),
+    };
+  }
+  return {
+    statusCode: 201,
+    body: JSON.stringify(itemToInsert),
+  };
 };
 
 const queryProducts = async (id) => {
