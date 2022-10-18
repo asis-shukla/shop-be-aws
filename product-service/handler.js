@@ -39,26 +39,33 @@ const scanStocks = async () => {
 };
 
 module.exports.getProductsList = async (event) => {
-  console.log("getProductsList Lambda functon ...", event);
-  const productsResult = await scanProducts();
-  const stockResults = await scanStocks();
-  const productsWithCount = productsResult.map((product) => {
-    let stockCount = stockResults.find((stockItem) => {
-      return stockItem.product_id == product.id;
+  console.log("getProductsList Lambda functon ...");
+  try {
+    const productsResult = await scanProducts();
+    const stockResults = await scanStocks();
+    const productsWithCount = productsResult.map((product) => {
+      let stockCount = stockResults.find((stockItem) => {
+        return stockItem.product_id == product.id;
+      });
+      if (!stockCount) {
+        stockCount = { count: 0 };
+      }
+      return {
+        ...product,
+        count: stockCount.count,
+      };
     });
-    if (!stockCount) {
-      stockCount = { count: 0 };
-    }
-    return {
-      ...product,
-      count: stockCount.count,
-    };
-  });
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify(productsWithCount),
-  };
+    return {
+      statusCode: 200,
+      body: JSON.stringify(productsWithCount),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify(error),
+    };
+  }
 };
 
 const putProduct = async (item) => {
@@ -109,17 +116,24 @@ const queryProducts = async (id) => {
 };
 
 module.exports.getProductsById = async (event) => {
-  console.log("getProductsById Lambda function...", event);
+  console.log("getProductsById Lambda function...", event.productId);
   const pId = event.pathParameters.productId;
-  const product = await queryProducts(pId);
-  if (product.Count == 0) {
+  try {
+    const product = await queryProducts(pId);
+    if (product.Count == 0) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify(`Product with ${pId} does not exist`),
+      };
+    }
     return {
-      statusCode: 404,
-      body: JSON.stringify(`Product with ${pId} does not exist`),
+      statusCode: 200,
+      body: JSON.stringify(product.Items),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify(error),
     };
   }
-  return {
-    statusCode: 200,
-    body: JSON.stringify(product.Items),
-  };
 };
