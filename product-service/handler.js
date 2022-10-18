@@ -3,6 +3,7 @@ const AWS = require("aws-sdk");
 const dynamo = new AWS.DynamoDB.DocumentClient();
 
 module.exports.hello = async (event) => {
+  console.log("hello Lambda functon ...", event);
   return {
     statusCode: 200,
     body: JSON.stringify(
@@ -38,6 +39,7 @@ const scanStocks = async () => {
 };
 
 module.exports.getProductsList = async (event) => {
+  console.log("getProductsList Lambda functon ...", event);
   const productsResult = await scanProducts();
   const stockResults = await scanStocks();
   const productsWithCount = productsResult.map((product) => {
@@ -70,6 +72,7 @@ const putProduct = async (item) => {
 };
 
 module.exports.createProduct = async (event) => {
+  console.log("createProduct Lambda function...", event);
   const itemToInsert = JSON.parse(event.body);
   const putProductResults = await putProduct(itemToInsert);
   return putProductResults;
@@ -87,6 +90,7 @@ const queryProducts = async (id) => {
 };
 
 module.exports.getProductsById = async (event) => {
+  console.log("getProductsById Lambda function...", event);
   const pId = event.pathParameters.productId;
   const product = await queryProducts(pId);
   if (product.Count == 0) {
