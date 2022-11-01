@@ -1,26 +1,14 @@
-'use strict';
-
-const productsData = [{ "id": 1, "name": "Crab - Soft Shell", "description": "Fish - Soup Base, Bouillon", "price": "$7.65", "availableDate": "6/5/2022" },
-{ "id": 2, "name": "Heavy Duty Dust Pan", "description": "Pails With Lids", "price": "$8.95", "availableDate": "6/5/2022" },
-{ "id": 3, "name": "Puree - Kiwi", "description": "Pork - Loin, Center Cut", "price": "$9.74", "availableDate": "11/10/2021" },
-{ "id": 4, "name": "Banana - Green", "description": "Juice - Clam, 46 Oz", "price": "$4.82", "availableDate": "2/20/2022" },
-{ "id": 5, "name": "Table Cloth 90x90 White", "description": "Tart - Lemon", "price": "$6.35", "availableDate": "7/18/2022" },
-{ "id": 6, "name": "Ice Cream Bar - Drumstick", "description": "Chips - Assorted", "price": "$2.89", "availableDate": "4/22/2022" },
-{ "id": 7, "name": "Flower - Dish Garden", "description": "Mustard - Seed", "price": "$7.71", "availableDate": "10/26/2021" },
-{ "id": 8, "name": "Broom - Push", "description": "Coffee - Cafe Moreno", "price": "$6.48", "availableDate": "6/15/2022" },
-{ "id": 9, "name": "Soup Campbells", "description": "Nantucket - 518ml", "price": "$7.20", "availableDate": "2/8/2022" },
-{ "id": 10, "name": "Dikon", "description": "Icecream Cone - Areo Chocolate", "price": "$3.26", "availableDate": "6/5/2022" },
-{ "id": 11, "name": "Fudge - Cream Fudge", "description": "Lid - High Heat, Super Clear", "price": "$6.92", "availableDate": "4/4/2022" },
-{ "id": 12, "name": "Nantucket Orange Juice", "description": "Soup - Knorr, French Onion", "price": "$1.85", "availableDate": "12/29/2021" },
-{ "id": 13, "name": "Olives - Kalamata", "description": "Pastry - Choclate Baked", "price": "$3.68", "availableDate": "5/9/2022" },
-{ "id": 14, "name": "Alize Gold Passion", "description": "Tea - Herbal - 6 Asst", "price": "$4.00", "availableDate": "12/14/2021" }];
+"use strict";
+const AWS = require("aws-sdk");
+const dynamo = new AWS.DynamoDB.DocumentClient();
 
 module.exports.hello = async (event) => {
+  console.log("hello Lambda functon ...", event);
   return {
     statusCode: 200,
     body: JSON.stringify(
       {
-        message: 'Go Serverless v1.0! Your function executed successfully!',
+        message: "Go Serverless v1.0! Your function executed successfully!",
         input: event,
       },
       null,
@@ -32,26 +20,120 @@ module.exports.hello = async (event) => {
   // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
 };
 
+const scanProducts = async () => {
+  const scanResult = await dynamo
+    .scan({
+      TableName: process.env.TABLE_NAME_ONE,
+    })
+    .promise();
+  return scanResult.Items;
+};
+
+const scanStocks = async () => {
+  const result = await dynamo
+    .scan({
+      TableName: process.env.TABLE_NAME_TWO,
+    })
+    .promise();
+  return result.Items;
+};
+
 module.exports.getProductsList = async (event) => {
-  return {
-    statusCode: 200,
-    body: JSON.stringify(productsData)
+  console.log("getProductsList Lambda functon ...");
+  try {
+    const productsResult = await scanProducts();
+    const stockResults = await scanStocks();
+    const productsWithCount = productsResult.map((product) => {
+      let stockCount = stockResults.find((stockItem) => {
+        return stockItem.product_id == product.id;
+      });
+      if (!stockCount) {
+        stockCount = { count: 0 };
+      }
+      return {
+        ...product,
+        count: stockCount.count,
+      };
+    });
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(productsWithCount),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify(error),
+    };
   }
-}
+};
+
+const putProduct = async (item) => {
+  const putResults = await dynamo
+    .put({
+      TableName: process.env.TABLE_NAME_ONE,
+      Item: item,
+    })
+    .promise();
+  return putResults;
+};
+
+module.exports.createProduct = async (event) => {
+  console.log("createProduct Lambda function...", event.body);
+  let itemToInsert = {};
+  try {
+    itemToInsert = JSON.parse(event.body);
+  } catch (error) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify("Bad Payload"),
+    };
+  }
+  let res;
+  try {
+    res = await putProduct(itemToInsert);
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify(res),
+    };
+  }
+  return {
+    statusCode: 201,
+    body: JSON.stringify(itemToInsert),
+  };
+};
+
+const queryProducts = async (id) => {
+  const queryResult = await dynamo
+    .query({
+      TableName: process.env.TABLE_NAME_ONE,
+      KeyConditionExpression: "id = :id",
+      ExpressionAttributeValues: { ":id": id },
+    })
+    .promise();
+  return queryResult;
+};
 
 module.exports.getProductsById = async (event) => {
+  console.log("getProductsById Lambda function...", event.productId);
   const pId = event.pathParameters.productId;
-  const product = productsData.find((item) => {
-    return item.id == pId
-  })
-  if (!product) {
-    return {
-      statusCode: 404,
-      body: JSON.stringify(`Product with ${pId} does not exist`)
+  try {
+    const product = await queryProducts(pId);
+    if (product.Count == 0) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify(`Product with ${pId} does not exist`),
+      };
     }
+    return {
+      statusCode: 200,
+      body: JSON.stringify(product.Items),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify(error),
+    };
   }
-  return {
-    statusCode: 200,
-    body: JSON.stringify(product)
-  }
-}
+};

@@ -1,0 +1,148 @@
+{
+    "products": [
+        {
+            "PutRequest": {
+                "Item": {
+                    "id": {
+                        "S": "101"
+                    },
+                    "title": {
+                        "S": "Book 101 Title"
+                    },
+                    "price": {
+                        "N": "204"
+                    },
+					"description": {
+                        "S": "Book 101 Title description"
+                    }
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "id": {
+                        "S": "102"
+                    },
+                    "title": {
+                        "S": "Book 102 Title"
+                    },
+                    "price": {
+                        "N": "3423"
+                    },
+					"description": {
+                        "S": "Book 102 Title description"
+                    }
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "id": {
+                        "S": "103"
+                    },
+                    "title": {
+                        "S": "Book 103 Title"
+                    },
+                    "price": {
+                        "N": "3123"
+                    },
+					"description": {
+                        "S": "Book 103 Title description"
+                    }
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "id": {
+                        "S": "104"
+                    },
+                    "title": {
+                        "S": "Book 104 Title"
+                    },
+                    "price": {
+                        "N": "997"
+                    },
+					"description": {
+                        "S": "Book 104 Title description"
+                    }
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "id": {
+                        "S": "105"
+                    },
+                    "title": {
+                        "S": "Book 105 Title"
+                    },
+                    "price": {
+                        "N": "2112"
+                    },
+					"description": {
+                        "S": "Book 105 Title description"
+                    }
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "id": {
+                        "S": "106"
+                    },
+                    "title": {
+                        "S": "Book 106 Title"
+                    },
+                    "price": {
+                        "N": "2204"
+                    },
+					"description": {
+                        "S": "Book 106 Title description"
+                    }
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "id": {
+                        "S": "107"
+                    },
+                    "title": {
+                        "S": "Book 107 Title"
+                    },
+                    "price": {
+                        "N": "2324"
+                    },
+					"description": {
+                        "S": "Book 107 Title description"
+                    }
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "id": {
+                        "S": "108"
+                    },
+                    "title": {
+                        "S": "Book 108 Title"
+                    },
+                    "price": {
+                        "N": "2344"
+                    },
+					"description": {
+                        "S": "Book 108 Title description"
+                    }
+                }
+            }
+        }
+    ]
+}

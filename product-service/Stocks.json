@@ -1,0 +1,68 @@
+{
+    "stocks": [
+        {
+            "PutRequest": {
+                "Item": {
+                    "product_id": {"S":"101"},
+					"count": {"N":"10"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "product_id": {"S":"102"},
+					"count": {"N":"20"}
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "product_id": {"S":"103"},
+					"count": {"N":"15"}
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "product_id": {"S":"104"},
+					"count": {"N":"11"}
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "product_id": {"S":"105"},
+					"count": {"N":"5"}
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "product_id": {"S":"106"},
+					"count": {"N":"12"}
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "product_id": {"S":"107"},
+					"count": {"N":"9"}
+                }
+            }
+        },
+		{
+            "PutRequest": {
+                "Item": {
+                    "product_id": {"S":"108"},
+					"count": {"N":"13"}
+                }
+            }
+        }
+    ]
+}
