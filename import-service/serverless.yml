@@ -17,14 +17,12 @@ provider:
     role:
       statements:
         - Effect: "Allow"
-          Action: "s3:ListBucket"
+          Action: "s3:*"
           Resource: "arn:aws:s3:::${self:custom.fileBucketName}"
 
         - Effect: "Allow"
-          Action:
-            - "s3:*"
-          Resource:
-            - "arn:aws:s3:::${self:custom.fileBucketName}/*"
+          Action: "s3:*"
+          Resource: "arn:aws:s3:::${self:custom.fileBucketName}/*"
 
 custom:
   webpack:
