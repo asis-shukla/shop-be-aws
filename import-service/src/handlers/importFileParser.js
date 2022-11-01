@@ -1,6 +1,11 @@
 import csv from "csv-parser";
 import { S3 } from "aws-sdk";
-import { UPLOADED_FOLDER, PARSED_FOLDER, BUCKET } from "../../common/constants";
+import {
+  UPLOADED_FOLDER,
+  PARSED_FOLDER,
+  BUCKET,
+  REGION,
+} from "../../common/constants";
 
 const s3 = new S3({
   region: REGION,
