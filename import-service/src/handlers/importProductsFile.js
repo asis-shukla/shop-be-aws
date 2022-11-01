@@ -30,6 +30,11 @@ const importProductsFile = async (event) => {
     return {
       statusCode: 200,
       body: JSON.stringify({ url }),
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Methods": "*",
+        "Access-Control-Allow-Origin": "*",
+      },
     };
   } catch (error) {
     return {
