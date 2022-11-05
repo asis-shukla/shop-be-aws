@@ -1,0 +1,52 @@
+service: import-service
+frameworkVersion: "3"
+
+plugins:
+  - serverless-webpack
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: us-east-1
+  httpApi:
+    cors: true
+  environment:
+    FILE_UPLOAD_BUCKET_NAME: ${self:custom.fileBucketName}
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action: "s3:*"
+          Resource: "arn:aws:s3:::${self:custom.fileBucketName}"
+
+        - Effect: "Allow"
+          Action: "s3:*"
+          Resource: "arn:aws:s3:::${self:custom.fileBucketName}/*"
+
+custom:
+  webpack:
+    webpackConfig: webpack.config.js
+    includeModules: false
+    packager: "npm"
+    excludeFiles: tests/*.test.js
+  fileBucketName: ashish-uploaded
+
+functions:
+  importProductsFile:
+    architecture: arm64
+    handler: src/handler.importProductsFile
+    events:
+      - httpApi:
+          path: /import/{fileName}
+          method: GET
+  importFileParser:
+    architecture: arm64
+    handler: src/handler.importFileParser
+    events:
+      - s3:
+          bucket: ${self:custom.fileBucketName}
+          event: s3:ObjectCreated:*
+          existing: true
+          rules:
+            - prefix: "uploaded/"
