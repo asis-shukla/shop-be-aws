@@ -3,15 +3,19 @@ frameworkVersion: '3'
 
 plugins:
   - serverless-webpack
+  - serverless-offline
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs16.x
   stage: dev
   region: us-east-1
+  httpApi:
+    cors: true
   environment:
     TABLE_NAME_ONE: products
     TABLE_NAME_TWO: stocks
+    SNS_ARN: ${self:custom.snsArn}
   iam:
     role:
       statements:
@@ -31,7 +35,13 @@ provider:
           Action:
             - "s3:PutObject"
           Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-
+        - Effect: "Allow"
+          Action: "sqs:*"
+          Resource: ${self:custom.sqsArn}
+        - Effect: "Allow"
+          Action: "sns:*"
+          Resource:
+            Ref: SNSTopic
 
 custom:
   webpack:
@@ -39,6 +49,33 @@ custom:
     includeModules: false
     packager: "npm"
     excludeFiles: tests/*.test.js
+  serverless-offline:
+    httpPort: 3000
+  autoswagger:
+    apiType: "httpApi"
+    generateSwaggerOnDeploy: false
+    schemes: ["http", "https", "ws", "wss"]
+  sqsArn: arn:aws:sqs:us-east-1:164051493317:catalogItemsQueue
+  snsArn: arn:aws:sns:us-east-1:164051493317:createProductTopic
+  email: ashish.14cs@gmail.com
+
+resources:
+  Resources:
+    SNSTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: createProductTopic
+    SNSSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: ${self:custom.email}
+        Protocol: email
+        TopicArn:
+          Ref: SNSTopic
+        FilterPolicy:
+          limitedQuantity:
+            - "false"
+
 
 functions:
   getProductsList:
@@ -49,3 +86,10 @@ functions:
     handler: src/handler.createProduct
   hello:
     handler: src/handler.hello
+  catalogBatchProcess:
+    architecture: arm64
+    handler: src/handler.catalogBatchProcess
+    events:
+      - sqs:
+          batchSize: 5
+          arn: ${self:custom.sqsArn}

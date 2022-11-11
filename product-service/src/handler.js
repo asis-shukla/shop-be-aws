@@ -4,4 +4,5 @@ export {
   getProductsList,
   createProduct,
   getProductsById,
+  catalogBatchProcess
 } from "./handlers";

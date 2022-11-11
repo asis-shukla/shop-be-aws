@@ -6,13 +6,14 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs16.x
   stage: dev
   region: us-east-1
   httpApi:
     cors: true
   environment:
     FILE_UPLOAD_BUCKET_NAME: ${self:custom.fileBucketName}
+    SQS_URL: ${self:custom.sqsUrl}
   iam:
     role:
       statements:
@@ -24,6 +25,10 @@ provider:
           Action: "s3:*"
           Resource: "arn:aws:s3:::${self:custom.fileBucketName}/*"
 
+        - Effect: "Allow"
+          Action: "sqs:*"
+          Resource: ${self:custom.sqsArn}
+
 custom:
   webpack:
     webpackConfig: webpack.config.js
@@ -31,6 +36,8 @@ custom:
     packager: "npm"
     excludeFiles: tests/*.test.js
   fileBucketName: ashish-uploaded
+  sqsArn: arn:aws:sqs:us-east-1:164051493317:catalogItemsQueue
+  sqsUrl: https://sqs.us-east-1.amazonaws.com/164051493317/catalogItemsQueue
 
 functions:
   importProductsFile:

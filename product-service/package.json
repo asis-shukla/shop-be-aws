@@ -12,7 +12,7 @@
   "devDependencies": {
     "@babel/core": "^7.19.3",
     "@babel/preset-env": "^7.19.4",
-    "aws-sdk": "^2.1238.0",
+    "aws-sdk": "^2.1250.0",
     "aws-sdk-mock": "^5.8.0",
     "babel-jest": "^29.1.2",
     "babel-loader": "^8.2.5",
@@ -22,8 +22,6 @@
     "webpack": "^5.74.0"
   },
   "dependencies": {
-    "csv-parser": "^3.0.0",
-    "serverless-auto-swagger": "^2.10.0",
     "serverless-offline": "^11.2.3"
   },
   "engines": {

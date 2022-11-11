@@ -30,7 +30,7 @@ const getProductsList = async (event) => {
         return stockItem.product_id == product.id;
       });
       if (!stockCount) {
-        stockCount = { count: 0 };
+        stockCount = { count: product.count ? product.count : 0 };
       }
       return {
         ...product,
