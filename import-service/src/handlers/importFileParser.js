@@ -1,5 +1,5 @@
 import csv from "csv-parser";
-import { S3 } from "aws-sdk";
+import { S3, SQS } from "aws-sdk";
 import {
   UPLOADED_FOLDER,
   PARSED_FOLDER,
@@ -14,14 +14,35 @@ const s3 = new S3({
   },
 });
 
+const sqs = new SQS({
+  region: REGION,
+});
+
+const onDataSendSQS = (chunk) => {
+  sqs.sendMessage(
+    {
+      QueueUrl: process.env.SQS_URL,
+      MessageBody: JSON.stringify(chunk),
+    },
+    (err, data) => {
+      console.log("Error = ", err);
+      console.log("Data = ", data);
+      console.log("Sent message for new product: ", chunk);
+    }
+  );
+};
+
 const csvParse = async ({ stream, key: fileKey }) => {
   return new Promise((resolve, reject) => {
+    const allData = [];
     stream
-      .pipe(csv())
+      .pipe(csv({ headers: false }))
       .on("data", (data) => {
-        console.log("Data_chunk: ", data);
+        allData.push(data);
+        onDataSendSQS(data);
       })
       .on("end", async () => {
+        console.log("Stream End. All data:", allData);
         console.log(`Copy from ${BUCKET}/${fileKey}.`);
 
         const newFileKey = fileKey.replace(UPLOADED_FOLDER, PARSED_FOLDER);
@@ -67,7 +88,7 @@ const getS3Streams = async (records) => {
 };
 
 const importFileParser = async (event) => {
-  console.log(event);
+  console.log("importFileParser event: ", event);
 
   try {
     const streams = await getS3Streams(event?.Records);

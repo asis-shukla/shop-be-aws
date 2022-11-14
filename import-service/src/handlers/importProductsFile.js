@@ -7,7 +7,7 @@ import {
 import { S3 } from "aws-sdk";
 
 const importProductsFile = async (event) => {
-  console.log(event);
+  console.log("importProductsFile event ", event);
 
   try {
     const fileName = event?.pathParameters?.fileName || null;
@@ -30,11 +30,6 @@ const importProductsFile = async (event) => {
     return {
       statusCode: 200,
       body: JSON.stringify({ url }),
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Methods": "*",
-        "Access-Control-Allow-Origin": "*",
-      },
     };
   } catch (error) {
     return {
