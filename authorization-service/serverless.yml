@@ -1,0 +1,30 @@
+service: authorization-service
+frameworkVersion: '3'
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  stage: dev
+  region: us-east-1
+
+custom:
+  webpack:
+    webpackConfig: webpack.config.js
+    includeModules: false
+    packager: "npm"
+    excludeFiles: tests/*.test.js
+  serverless-offline:
+    httpPort: 3000
+  autoswagger:
+    apiType: "httpApi"
+    generateSwaggerOnDeploy: false
+    schemes: ["http", "https", "ws", "wss"]
+
+functions:
+  basicAuthorizer:
+    handler: src/handler.basicAuthorizer
